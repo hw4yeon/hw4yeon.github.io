@@ -1510,3 +1510,35 @@ a.tag:hover { border-color: var(--accent); color: var(--accent); }
 .post-body img {
   background: #ffffff;
 }
+
+/* ── 깊은 단계 제목 (h4~h6) ──────────────────────── */
+/* Notion 문서가 3단계(#/##/###)를 쓰면 한 칸씩 밀려 h4 까지 내려온다.
+   여기까지 스타일이 없으면 소제목이 그냥 굵은 문장처럼 보인다. */
+.post-body h4 {
+  margin: 32px 0 10px;
+  font-size: 16.5px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.45;
+  color: var(--fg);
+  scroll-margin-top: 90px;
+}
+.post-body h4::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 2px;
+  margin-right: 9px;
+  vertical-align: middle;
+  background: var(--accent);
+}
+
+.post-body h5,
+.post-body h6 {
+  margin: 26px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg-2);
+  scroll-margin-top: 90px;
+}

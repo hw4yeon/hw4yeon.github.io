@@ -53,10 +53,10 @@ goatcounter: hw4yeon
 #
 # 비워두면 댓글창이 아예 나오지 않습니다 (지금 상태).
 giscus:
-  repo: ""            # 예: hw4yeon/hw4yeon.github.io
-  repo_id: ""
+  repo: "hw4yeon/hw4yeon.github.io"
+  repo_id: "R_kgDOTpM70g"
   category: "Announcements"
-  category_id: ""
+  category_id: "DIC_kwDOTpM70s4DCZD3"
 
 # ── 디자인 테마 ──────────────────────────────────
 # assets/css/theme-<이름>.css 를 찾아 씁니다.
