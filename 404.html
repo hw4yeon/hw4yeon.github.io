@@ -1,0 +1,43 @@
+---
+layout: default
+title: 404
+permalink: /404.html
+sitemap: false
+---
+
+<section class="page-head" data-reveal>
+  <p class="eyebrow">Error 404</p>
+  <h1>Not Found</h1>
+  <p class="lead">주소가 바뀌었거나, 없는 페이지입니다.</p>
+</section>
+
+<div class="notfound" data-reveal>
+  <div class="hero-actions">
+    <a class="btn primary" href="{{ '/' | relative_url }}">
+      HOME<span class="btn-arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="btn" href="{{ '/blog/' | relative_url }}">전체 글 보기</a>
+  </div>
+
+  {% if site.posts.size > 0 %}
+  <section class="block">
+    <div class="block-head">
+      <h2>Recent posts</h2>
+    </div>
+    <ul class="post-list">
+      {% for post in site.posts limit: 5 %}
+      <li>
+        <a href="{{ post.url | relative_url }}">
+          <span class="idx">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+          <span class="post-main">
+            <span class="t">{{ post.title }}</span>
+            <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y.%m.%d" }}</time>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>

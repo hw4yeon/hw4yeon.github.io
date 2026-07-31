@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hw4yeon.github.io/sitemap.xml

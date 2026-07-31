@@ -3,20 +3,79 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
-  <meta name="description" content="{{ page.description | default: site.description }}">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <meta name="theme-color" content="#08080a">
+
+  {%- comment -%}
+    브라우저 탭 제목. 홈은 이름만, 나머지 페이지는 "글제목 · HW4YEON".
+  {%- endcomment -%}
+  {%- assign brand = site.title | upcase -%}
+  {%- assign page_title = brand -%}
+  {%- if page.title and page.url != '/' -%}
+    {%- assign page_title = page.title | append: " · " | append: brand -%}
+  {%- endif -%}
+  {%- assign page_desc = page.summary | default: page.description | default: site.description -%}
+
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ page_desc }}">
+  <link rel="canonical" href="{{ page.url | absolute_url }}">
+
+  <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+  <meta property="og:site_name" content="{{ site.title }}">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ page_desc }}">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta name="twitter:card" content="summary">
+
+  {%- assign theme = site.theme_name | default: 'terminal' -%}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+  {%- comment -%}
+    ?v=빌드시각 — 디자인을 고쳐도 방문자 브라우저가 옛 CSS 를 계속 쓰는 걸 막습니다.
+  {%- endcomment -%}
+  <link rel="stylesheet"
+        href="{{ '/assets/css/theme-' | append: theme | append: '.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+  <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}?v={{ site.time | date: '%s' }}">
   <link rel="alternate" type="application/atom+xml" href="{{ '/feed.xml' | relative_url }}">
+
+  <script>
+    // JS 가 살아있을 때만 등장 애니메이션을 켠다.
+    // (스크립트가 깨져도 본문은 항상 보이도록)
+    document.documentElement.classList.add('js');
+
+    // 저장된 테마를 그리기 전에 적용 — 새로고침 때 흰/검 깜빡임 방지
+    try {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch (e) { /* 시크릿 모드 등에서 막히면 기본(검정) 유지 */ }
+  </script>
 </head>
 <body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
   <header class="site-header">
-    <a class="brand" href="{{ '/' | relative_url }}">hw4yeon<span class="cursor">_</span></a>
-    <nav>
-      <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>About</a>
-      <a href="{{ '/blog/' | relative_url }}" {% if page.url contains '/blog' or page.layout == 'post' %}class="active"{% endif %}>Blog</a>
-      <a href="{{ '/projects/' | relative_url }}" {% if page.url contains '/projects' %}class="active"{% endif %}>Projects</a>
-      <a href="https://github.com/{{ site.author.github }}" target="_blank" rel="noopener">GitHub ↗</a>
-    </nav>
+    <div class="header-inner">
+      <a class="brand" href="{{ '/' | relative_url }}">
+        <span class="brand-dot" aria-hidden="true"></span>hw4yeon<span class="cursor" aria-hidden="true">_</span>
+      </a>
+      <nav>
+        <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>About</a>
+        <a href="{{ '/blog/' | relative_url }}" {% if page.url contains '/blog' or page.layout == 'post' %}class="active"{% endif %}>Blog</a>
+        <button type="button" class="theme-toggle" aria-label="밝은 테마로 전환">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/>
+          </svg>
+        </button>
+      </nav>
+    </div>
   </header>
 
   <main class="wrap">
@@ -24,8 +83,130 @@
   </main>
 
   <footer class="site-footer">
-    <span>© {{ 'now' | date: "%Y" }} {{ site.author.name }}</span>
-    <span><a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a></span>
+    {%- comment -%}
+      푸터는 이름만 남겼습니다. 링크(GitHub 등)는 홈 오른쪽 목록에 있고,
+      소속 문구는 홈에만 둡니다.
+      RSS 도 눈에 보이는 링크만 뺐을 뿐 feed.xml 은 계속 생성되며
+      head 의 rel="alternate" 로 구독기가 자동 인식합니다.
+    {%- endcomment -%}
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="f-name">{{ site.author.name }}</span>
+      </div>
+    {%- comment -%}
+      방문자 카운터. 푸터 오른쪽에 붙습니다.
+      GoatCounter 가입 후( https://www.goatcounter.com — 개인 사이트는 무료 )
+      _config.yml 에 아래 한 줄만 추가하면 바로 켜집니다.
+
+        goatcounter: 내가정한사이트코드
+
+      가입 전에는 자리만 잡아둔 상태(–)로 보입니다.
+    {%- endcomment -%}
+    <div class="counter" aria-label="방문자 수">
+      <span class="c-cell">
+        <span class="c-label">TOTAL</span>
+        <span class="c-num" id="hits-total">–</span>
+      </span>
+      <span class="c-sep" aria-hidden="true"></span>
+      <span class="c-cell">
+        <span class="c-label">TODAY</span>
+        <span class="c-num" id="hits-today">–</span>
+      </span>
+    </div>
+    </div>
+
+    {% if site.goatcounter %}
+    <script data-goatcounter="https://{{ site.goatcounter }}.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+    <script>
+      // 집계된 숫자를 푸터에 표시 (GoatCounter 의 공개 카운터 API)
+      (function () {
+        var base = 'https://{{ site.goatcounter }}.goatcounter.com/counter/';
+
+        // start 는 YYYY-MM-DD 만 받는다. 'today' 를 넣으면 400 이 난다.
+        var t = new Date();
+        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        var today = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+
+        var put = function (id, url) {
+          fetch(base + url)
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+              if (!d) return;
+              // count_unique = 방문자 수(사람 기준), count = 조회 수
+              document.getElementById(id).textContent = d.count_unique || d.count || '0';
+            })
+            .catch(function () { /* 실패하면 – 그대로 둔다 */ });
+        };
+
+        put('hits-total', 'TOTAL.json');
+        put('hits-today', 'TOTAL.json?start=' + today);
+      })();
+    </script>
+    {% endif %}
+
+    <p class="footer-meta">© {{ 'now' | date: "%Y" }} {{ site.author.name }} · Built with Jekyll</p>
   </footer>
+
+  <script>
+    // 스크롤 진입 시 페이드인 (모션 최소화 설정은 존중)
+    (function () {
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var items = document.querySelectorAll('[data-reveal]');
+      if (reduce || !('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('is-in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+      items.forEach(function (el) { io.observe(el); });
+
+      // 안전장치: 어떤 이유로든 관찰이 안 걸리면 1.5초 뒤 전부 노출
+      setTimeout(function () {
+        items.forEach(function (el) { el.classList.add('is-in'); });
+      }, 1500);
+    })();
+
+    // 밝은 / 어두운 테마 전환 (선택은 localStorage 에 저장)
+    (function () {
+      var btn  = document.querySelector('.theme-toggle');
+      var root = document.documentElement;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (!btn) return;
+
+      var apply = function (t) {
+        root.setAttribute('data-theme', t);
+        btn.setAttribute('aria-label', t === 'light' ? '어두운 테마로 전환' : '밝은 테마로 전환');
+        btn.setAttribute('aria-pressed', t === 'light');
+        if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : '#08080a');
+        try { localStorage.setItem('theme', t); } catch (e) {}
+
+        // 댓글창(giscus)은 iframe 이라 색을 따로 알려줘야 한다
+        var gc = document.querySelector('iframe.giscus-frame');
+        if (gc) {
+          gc.contentWindow.postMessage(
+            { giscus: { setConfig: { theme: t === 'light' ? 'light' : 'transparent_dark' } } },
+            'https://giscus.app'
+          );
+        }
+      };
+
+      apply(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+      btn.addEventListener('click', function () {
+        apply(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+      });
+    })();
+
+    // 스크롤하면 헤더에 경계선/배경 표시
+    (function () {
+      var h = document.querySelector('.site-header');
+      var onScroll = function () { h.classList.toggle('scrolled', window.scrollY > 8); };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
 </body>
 </html>

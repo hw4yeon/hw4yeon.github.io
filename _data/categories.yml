@@ -1,0 +1,28 @@
+# ── 블로그 카테고리 메뉴 ─────────────────────────────
+# 여기 적은 순서 그대로 /blog/ 메뉴에 나옵니다. 3단까지 됩니다.
+#
+# 글에서는 front matter 에 아래처럼 적으면 이 메뉴에 걸립니다.
+#
+#   categories: [Study, Dreamhack, System Hacking]   ← 대 / 중 / 소
+#   categories: [Study, AI]                          ← 2단까지만
+#   categories: [Daily]                              ← 1단만
+#
+# 모든 항목은 name 을 갖고, 더 나눌 게 있으면 children 을 답니다.
+# 이름을 바꾸면 글의 categories 도 같이 바꿔줘야 합니다.
+
+- name: Study
+  children:
+    - name: Dreamhack
+      children:
+        - name: System Hacking
+
+    - name: Wargame
+      children:
+        - name: Pwnable
+        - name: Web
+        - name: Reversing
+
+    - name: AI
+    - name: Etc
+
+- name: Daily

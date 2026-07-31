@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 검정 바탕 + 흰색 자물쇠. 16px 로 줄어도 형태가 남도록 획을 굵게. -->
+  <rect width="64" height="64" rx="14" fill="#0a0a0c"/>
+
+  <!-- 고리 -->
+  <path d="M22 30 v-6 a10 10 0 0 1 20 0 v6"
+        fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- 몸통 -->
+  <rect x="15" y="29" width="34" height="24" rx="5" fill="#ffffff"/>
+
+  <!-- 열쇠 구멍 -->
+  <circle cx="32" cy="38" r="3.4" fill="#0a0a0c"/>
+  <path d="M32 40 v5" stroke="#0a0a0c" stroke-width="3.4" stroke-linecap="round"/>
+</svg>

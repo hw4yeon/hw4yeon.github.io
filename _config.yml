@@ -1,14 +1,69 @@
 # ── 사이트 기본 정보 ──────────────────────────────
 title: "hw4yeon"
-tagline: "보안을 공부하고 기록합니다"
-description: "김덕연의 기술 블로그 & 포트폴리오"
+# 브라우저 탭 제목 / 공유 카드에 쓰이는 한 줄 소개
+tagline: "Research Team: Quble"
+
+# 홈 ABOUT 아래에 한 줄씩 표시되는 소속·직함.
+# 콜론 뒤쪽(팀/단체 이름)만 강조색으로 표시됩니다.
+# url 을 적으면 링크가 되고, 비우면 그냥 글자로 남습니다. 줄을 늘리면 항목이 늘어납니다.
+roles:
+  - text: "Research Team: Quble"
+    url: "https://securityquble.github.io/"
+
+  - text: "Club President: SAIL"
+    url: "http://hansung-aislab.kr/sail/index.html"
+description: "보안을 공부하며 남기는 기록"
 url: "https://hw4yeon.github.io"
 baseurl: ""
 
+# 실명 / 개인 연락처는 넣지 않습니다. 닉네임만 사용.
 author:
-  name: "김덕연"
-  email: "deokyeony0113@gmail.com"
+  name: "hw4yeon"
   github: "hw4yeon"
+
+# ── 홈 오른쪽에 한 줄씩 쌓이는 링크 ─────────────────
+# 여기 적은 순서대로 나옵니다. 줄을 지우면 그 항목이 사라집니다.
+# 나중에 추가하면 좋을 것들: Dreamhack, CTFtime, X(트위터),
+# Velog/Tistory, 이력서 PDF, 별도 이메일 주소 등
+links:
+  # ⚠ 이 주소에는 실명(deokyeon-kim)이 그대로 들어 있습니다.
+  #   실명을 감추고 싶으면 이 두 줄을 지우세요.
+  - name: "LinkedIn"
+    url: "https://www.linkedin.com/in/deokyeon-kim-2840a641a/"
+
+  - name: "GitHub"
+    url: "https://github.com/hw4yeon"
+  # 연락처를 열고 싶으면 실명이 드러나지 않는 별도 주소로 아래 주석을 푸세요.
+  # email: "..."
+
+# ── 방문자 수 (GoatCounter) ──────────────────────
+# https://<여기값>.goatcounter.com 계정의 사이트 코드.
+# 비우면 푸터 카운터가 "–" 인 채로 남습니다.
+goatcounter: hw4yeon
+
+# ── 댓글 / 좋아요 (giscus) ───────────────────────
+# GitHub Discussions 를 댓글창으로 쓰는 방식입니다. 무료·광고 없음.
+# 댓글에 👍 같은 반응도 같이 달려서 "좋아요"까지 한 번에 됩니다.
+#
+# 켜는 순서:
+#   1. 저장소를 public 으로 (Discussions 가 public 에서만 됩니다)
+#   2. 저장소 Settings → General → Features → Discussions 체크
+#   3. https://github.com/apps/giscus 에서 이 저장소에 앱 설치
+#   4. https://giscus.app 에 저장소 주소를 넣으면 아래 4개 값을 알려줍니다
+#
+# 비워두면 댓글창이 아예 나오지 않습니다 (지금 상태).
+giscus:
+  repo: ""            # 예: hw4yeon/hw4yeon.github.io
+  repo_id: ""
+  category: "Announcements"
+  category_id: ""
+
+# ── 디자인 테마 ──────────────────────────────────
+# assets/css/theme-<이름>.css 를 찾아 씁니다.
+# 지금은 editorial 하나뿐입니다 (좌측 고정 사이드바 + 번호 매긴 인덱스형 목록).
+# 새 테마를 만들려면 theme-<이름>.css 를 추가하고 이 줄을 바꾸면 됩니다.
+# (_config.yml 은 Jekyll 이 감시하지 않아서 서버 재시작이 필요합니다)
+theme_name: editorial
 
 # ── 빌드 설정 ────────────────────────────────────
 markdown: kramdown
@@ -23,6 +78,7 @@ kramdown:
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-sitemap
 
 exclude:
   - README.md

@@ -4,24 +4,199 @@ title: Blog
 permalink: /blog/
 ---
 
-<section class="page-head">
+<section class="page-head" data-reveal>
+  <p class="eyebrow">Archive</p>
   <h1>Blog</h1>
-  <p class="lead">공부하며 정리한 글 {{ site.posts.size }}편</p>
 </section>
 
-<ul class="post-list big">
-  {% for post in site.posts %}
-  <li>
-    <a href="{{ post.url | relative_url }}">
-      <time>{{ post.date | date: "%Y.%m.%d" }}</time>
-      <span class="t">{{ post.title }}</span>
-      {% if post.summary %}<span class="s">{{ post.summary }}</span>{% endif %}
-      {% if post.tags.size > 0 %}
-      <span class="tags">{% for tag in post.tags %}<span class="tag">#{{ tag }}</span>{% endfor %}</span>
-      {% endif %}
-    </a>
-  </li>
-  {% else %}
-  <li class="empty">아직 글이 없습니다. <code>_posts/</code> 에 마크다운 파일을 추가해보세요.</li>
+{% if site.data.categories %}
+<nav class="cat-menu" id="cat-menu" aria-label="카테고리" data-reveal>
+  <button type="button" class="cat-item cat-all is-on" data-cat="*">
+    <span class="ci-name">All</span><em>{{ site.posts.size }}</em>
+  </button>
+
+  {% for group in site.data.categories %}
+    {%- assign in_group = site.posts | where_exp: "p", "p.categories[0] == group.name" -%}
+
+    {% if group.children and group.children.size > 0 %}
+    <details class="cat-group">
+      <summary>
+        <span class="ci-caret" aria-hidden="true">▸</span>
+        <span class="ci-name">{{ group.name }}</span>
+        <em>{{ in_group.size }}</em>
+      </summary>
+
+      <div class="cat-children">
+        <button type="button" class="cat-item" data-cat="{{ group.name }}">
+          <span class="ci-name">전체</span><em>{{ in_group.size }}</em>
+        </button>
+
+        {% for child in group.children %}
+          {%- assign in_child = in_group | where_exp: "p", "p.categories[1] == child.name" -%}
+
+          {% if child.children and child.children.size > 0 %}
+          {%- comment -%} 3단째 — Wargame 처럼 안에서 또 나뉘는 경우 {%- endcomment -%}
+          <details class="cat-group cat-sub">
+            <summary>
+              <span class="ci-caret" aria-hidden="true">▸</span>
+              <span class="ci-name">{{ child.name }}</span>
+              <em>{{ in_child.size }}</em>
+            </summary>
+
+            <div class="cat-children">
+              {% for leaf in child.children %}
+                {%- assign in_leaf = in_child | where_exp: "p", "p.categories[2] == leaf.name" -%}
+                <button type="button" class="cat-item"
+                        data-cat="{{ group.name }}/{{ child.name }}/{{ leaf.name }}">
+                  <span class="ci-name">{{ leaf.name }}</span><em>{{ in_leaf.size }}</em>
+                </button>
+              {% endfor %}
+            </div>
+          </details>
+
+          {% else %}
+          <button type="button" class="cat-item" data-cat="{{ group.name }}/{{ child.name }}">
+            <span class="ci-name">{{ child.name }}</span><em>{{ in_child.size }}</em>
+          </button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </details>
+
+    {% else %}
+    <button type="button" class="cat-item cat-top" data-cat="{{ group.name }}">
+      <span class="ci-name">{{ group.name }}</span><em>{{ in_group.size }}</em>
+    </button>
+    {% endif %}
   {% endfor %}
-</ul>
+</nav>
+{% endif %}
+
+{% if site.posts.size > 0 %}
+  {%- comment -%}
+    글 번호는 "처음 올린 글 = 01" 이 되도록 시간순으로 매긴다.
+    site.posts 는 최신순이라, 앞쪽(더 최신)에 몇 편이 있었는지 세서 뒤집는다.
+      seen  = 지금까지 지나온 연도 묶음들의 글 수 (= 더 최신인 글 수)
+      번호  = 전체 - (seen + 현재 묶음 안에서의 위치)
+  {%- endcomment -%}
+  {% assign total = site.posts.size %}
+  {% assign seen = 0 %}
+  {% assign years = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
+  {% for year in years %}
+  <section class="year-block" data-year data-reveal>
+    <h2 class="year-label"><span>{{ year.name }}</span><i></i><em class="y-count">{{ year.items.size }}</em></h2>
+
+    <ul class="post-list big">
+      {% for post in year.items %}
+      {%- assign num = total | minus: seen | minus: forloop.index0 -%}
+      <li data-cat="{{ post.categories | join: '/' }}">
+        <a href="{{ post.url | relative_url }}">
+          <span class="idx">{% if num < 10 %}0{% endif %}{{ num }}</span>
+          <span class="post-main">
+            <span class="t">{{ post.title }}</span>
+            {% if post.summary %}<span class="s">{{ post.summary }}</span>{% endif %}
+            <span class="meta-row">
+              <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%m.%d" }}</time>
+              {% if post.categories.size > 0 %}
+              <span class="crumb">{{ post.categories | join: " / " }}</span>
+              {% endif %}
+            </span>
+          </span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {%- assign seen = seen | plus: year.items.size -%}
+  {% endfor %}
+
+  <p class="no-result" id="no-result" hidden>이 카테고리에는 아직 글이 없습니다.</p>
+{% else %}
+  <ul class="post-list big">
+    <li class="empty">아직 글이 없습니다. <code>_posts/</code> 에 마크다운 파일을 추가해보세요.</li>
+  </ul>
+{% endif %}
+
+<script>
+  (function () {
+    var menu = document.getElementById('cat-menu');
+    if (!menu) return;
+
+    var items = menu.querySelectorAll('.cat-item');
+    var posts = document.querySelectorAll('.post-list.big > li[data-cat]');
+    var years = document.querySelectorAll('[data-year]');
+    var count = document.getElementById('visible-count');
+    var none  = document.getElementById('no-result');
+
+    // "Study" 를 고르면 "Study/Wargame" 도 포함되어야 한다
+    function matches(postCat, pick) {
+      if (pick === '*') return true;
+      return postCat === pick || postCat.indexOf(pick + '/') === 0;
+    }
+
+    function apply(pick) {
+      var shown = 0;
+
+      posts.forEach(function (li) {
+        var hit = matches(li.getAttribute('data-cat'), pick);
+        li.hidden = !hit;
+        if (hit) shown++;
+      });
+
+      years.forEach(function (y) {
+        var visible = y.querySelectorAll('li[data-cat]:not([hidden])');
+        y.hidden = visible.length === 0;
+        var c = y.querySelector('.y-count');
+        if (c) c.textContent = visible.length;
+      });
+
+      if (count) count.textContent = shown;
+      if (none) none.hidden = shown !== 0;
+
+      items.forEach(function (b) {
+        b.classList.toggle('is-on', b.getAttribute('data-cat') === pick);
+      });
+
+      // 고른 항목이 접혀 있으면 펼친다. 3단이므로 상위 그룹까지 거슬러 올라간다.
+      menu.querySelectorAll('details.cat-group').forEach(function (d) {
+        d.classList.remove('has-on');
+      });
+      items.forEach(function (b) {
+        if (!b.classList.contains('is-on')) return;
+        var d = b.closest('details');
+        while (d) {
+          d.open = true;
+          d.classList.add('has-on');
+          d = d.parentElement ? d.parentElement.closest('details') : null;
+        }
+      });
+    }
+
+    function fromHash() {
+      var raw = location.hash.slice(1);
+      if (!raw) return '*';
+      var pick = decodeURIComponent(raw);
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].getAttribute('data-cat') === pick) return pick;
+      }
+      return '*';
+    }
+
+    items.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var pick = b.getAttribute('data-cat');
+        // 주소에 남겨두면 링크 공유 / 새로고침에도 유지된다
+        if (pick === '*') {
+          history.replaceState(null, '', location.pathname);
+        } else {
+          history.replaceState(null, '', '#' + encodeURIComponent(pick));
+        }
+        apply(pick);
+      });
+    });
+
+    window.addEventListener('hashchange', function () { apply(fromHash()); });
+    apply(fromHash());
+  })();
+</script>

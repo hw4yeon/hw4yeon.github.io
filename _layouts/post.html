@@ -1,14 +1,32 @@
 ---
 layout: default
 ---
+<div class="read-progress" aria-hidden="true"><i></i></div>
+
+{%- comment -%}
+  목차. 본문의 h2/h3 를 읽어 JS 가 채웁니다.
+  제목이 하나도 없는 글이면 이 요소 자체를 제거해서 2단 레이아웃이 풀립니다.
+{%- endcomment -%}
+<nav class="post-toc" id="post-toc" aria-label="목차">
+  <p class="toc-label">On this page</p>
+  <ol class="toc-list"></ol>
+</nav>
+
 <article class="post">
+  <p class="back-top"><a href="{{ '/blog/' | relative_url }}">← Blog</a></p>
+
   <header class="post-head">
-    <p class="post-meta">
-      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y.%m.%d" }}</time>
-      {% for tag in page.tags %}<span class="tag">#{{ tag }}</span>{% endfor %}
-    </p>
     <h1>{{ page.title }}</h1>
     {% if page.summary %}<p class="post-summary">{{ page.summary }}</p>{% endif %}
+    <div class="post-meta">
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y년 %-m월 %-d일" }}</time>
+      {% if page.categories.size > 0 %}
+      <span class="dot" aria-hidden="true">·</span>
+      <a class="crumb" href="{{ '/blog/' | relative_url }}#{{ page.categories | join: '/' | uri_escape }}">
+        {{ page.categories | join: " / " }}
+      </a>
+      {% endif %}
+    </div>
   </header>
 
   <div class="post-body">
@@ -16,9 +34,144 @@ layout: default
   </div>
 
   <nav class="post-nav">
-    {% if page.previous %}<a href="{{ page.previous.url | relative_url }}">← {{ page.previous.title }}</a>{% else %}<span></span>{% endif %}
-    {% if page.next %}<a href="{{ page.next.url | relative_url }}">{{ page.next.title }} →</a>{% endif %}
+    {% if page.previous %}
+    <a class="pn prev" href="{{ page.previous.url | relative_url }}">
+      <span class="pn-label">← 이전 글</span>
+      <span class="pn-title">{{ page.previous.title }}</span>
+    </a>
+    {% else %}<span></span>{% endif %}
+
+    {% if page.next %}
+    <a class="pn next" href="{{ page.next.url | relative_url }}">
+      <span class="pn-label">다음 글 →</span>
+      <span class="pn-title">{{ page.next.title }}</span>
+    </a>
+    {% endif %}
   </nav>
 
-  <p class="back"><a href="{{ '/blog/' | relative_url }}">← 전체 글 보기</a></p>
+  {%- comment -%}
+    댓글 + 반응(좋아요). _config.yml 의 giscus 값이 채워져야 나옵니다.
+  {%- endcomment -%}
+  {% if site.giscus.repo != "" and site.giscus.repo_id != "" %}
+  <section class="comments">
+    <h2 class="comments-label">Comments</h2>
+    <script src="https://giscus.app/client.js"
+            data-repo="{{ site.giscus.repo }}"
+            data-repo-id="{{ site.giscus.repo_id }}"
+            data-category="{{ site.giscus.category }}"
+            data-category-id="{{ site.giscus.category_id }}"
+            data-mapping="pathname"
+            data-strict="1"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="top"
+            data-theme="transparent_dark"
+            data-lang="ko"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async></script>
+  </section>
+  {% endif %}
 </article>
+
+<script>
+  // 읽기 진행률 바
+  (function () {
+    var bar = document.querySelector('.read-progress i');
+    var body = document.querySelector('.post-body');
+    if (!bar || !body) return;
+
+    var update = function () {
+      var start = body.offsetTop;
+      var span = body.offsetHeight - window.innerHeight;
+      var pct = span <= 0 ? 1 : (window.scrollY - start) / span;
+      bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, pct)) + ')';
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+  })();
+
+  // 목차 생성 + 현재 위치 표시
+  (function () {
+    var toc  = document.getElementById('post-toc');
+    var list = toc && toc.querySelector('.toc-list');
+    var heads = document.querySelectorAll('.post-body h2, .post-body h3');
+    if (!toc) return;
+
+    // 제목이 없으면 목차를 통째로 없앤다 (레이아웃도 1단으로 돌아감)
+    if (heads.length === 0) { toc.remove(); return; }
+
+    var links = [];
+    heads.forEach(function (h, i) {
+      if (!h.id) h.id = 'section-' + (i + 1);
+
+      var li = document.createElement('li');
+      li.className = h.tagName === 'H3' ? 'lv3' : 'lv2';
+
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent.replace(/#$/, '').trim();
+
+      li.appendChild(a);
+      list.appendChild(li);
+      links.push({ el: h, link: a });
+    });
+
+    // 스크롤에 따라 현재 섹션 강조
+    var mark = function () {
+      var y = window.scrollY + 120;
+      var current = links[0];
+      links.forEach(function (x) { if (x.el.offsetTop <= y) current = x; });
+      links.forEach(function (x) { x.link.classList.toggle('is-here', x === current); });
+    };
+    mark();
+    window.addEventListener('scroll', mark, { passive: true });
+  })();
+
+  // 제목마다 앵커 링크 (해당 섹션 주소를 바로 복사할 수 있게)
+  (function () {
+    document.querySelectorAll('.post-body h2, .post-body h3').forEach(function (h) {
+      if (!h.id) return;
+      var a = document.createElement('a');
+      a.className = 'h-anchor';
+      a.href = '#' + h.id;
+      a.textContent = '#';
+      a.setAttribute('aria-label', '이 섹션 링크');
+      h.appendChild(a);
+    });
+  })();
+
+  // 코드 블록 복사 버튼
+  (function () {
+    if (!navigator.clipboard) return;
+    document.querySelectorAll('.post-body pre').forEach(function (pre) {
+      // rouge 는 pre 를 .highlighter-rouge 로 감싼다. 버튼은 스크롤되지 않는
+      // 바깥 컨테이너에 붙여야 가로 스크롤 시 같이 밀리지 않는다.
+      var shell = pre.closest('.highlighter-rouge') || pre.parentElement;
+      if (!shell || shell.classList.contains('post-body')) {
+        shell = document.createElement('div');
+        pre.parentNode.insertBefore(shell, pre);
+        shell.appendChild(pre);
+      }
+      shell.classList.add('code-shell');
+
+      // language-yaml → YAML 라벨로 표시 (호버하면 copy 버튼으로 교체됨)
+      var lang = (shell.className.match(/language-([\w+#-]+)/) || [])[1];
+      if (lang && lang !== 'plaintext') shell.setAttribute('data-lang', lang);
+
+      var btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.type = 'button';
+      btn.textContent = 'copy';
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(pre.innerText).then(function () {
+          btn.textContent = 'copied!';
+          btn.classList.add('done');
+          setTimeout(function () { btn.textContent = 'copy'; btn.classList.remove('done'); }, 1500);
+        });
+      });
+      shell.appendChild(btn);
+    });
+  })();
+</script>
