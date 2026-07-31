@@ -1,0 +1,27 @@
+---
+layout: default
+title: Blog
+permalink: /blog/
+---
+
+<section class="page-head">
+  <h1>Blog</h1>
+  <p class="lead">공부하며 정리한 글 {{ site.posts.size }}편</p>
+</section>
+
+<ul class="post-list big">
+  {% for post in site.posts %}
+  <li>
+    <a href="{{ post.url | relative_url }}">
+      <time>{{ post.date | date: "%Y.%m.%d" }}</time>
+      <span class="t">{{ post.title }}</span>
+      {% if post.summary %}<span class="s">{{ post.summary }}</span>{% endif %}
+      {% if post.tags.size > 0 %}
+      <span class="tags">{% for tag in post.tags %}<span class="tag">#{{ tag }}</span>{% endfor %}</span>
+      {% endif %}
+    </a>
+  </li>
+  {% else %}
+  <li class="empty">아직 글이 없습니다. <code>_posts/</code> 에 마크다운 파일을 추가해보세요.</li>
+  {% endfor %}
+</ul>

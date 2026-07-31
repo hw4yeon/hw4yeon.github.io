@@ -1,0 +1,39 @@
+# ── 사이트 기본 정보 ──────────────────────────────
+title: "hw4yeon"
+tagline: "보안을 공부하고 기록합니다"
+description: "김덕연의 기술 블로그 & 포트폴리오"
+url: "https://hw4yeon.github.io"
+baseurl: ""
+
+author:
+  name: "김덕연"
+  email: "deokyeony0113@gmail.com"
+  github: "hw4yeon"
+
+# ── 빌드 설정 ────────────────────────────────────
+markdown: kramdown
+highlighter: rouge
+permalink: /posts/:year/:month/:day/:title/
+
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .DS_Store
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
