@@ -124,6 +124,37 @@ def shift_headings(text):
     return "\n".join(result)
 
 
+def escape_angles(text):
+    """<destination> 같은 꺾쇠 표현을 마크다운 변환기가 HTML 태그로 오해하지
+    않도록 이스케이프한다.
+
+    이걸 안 하면 kramdown 이 <destination> 을 '열린 태그'로 보고 닫는 태그를
+    찾다가, 못 찾으면 그 뒤 문서 전체를 HTML 덩어리로 삼켜서 글이 통째로
+    깨진다(제목·표·코드블록이 전부 글자로 보임).
+
+    코드블록 · 인라인코드 · 자동링크(<https://...>) 는 건드리지 않는다.
+    """
+    out, in_fence = [], False
+    for line in text.split("\n"):
+        if re.match(r"^\s*```", line):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+
+        # 인라인 코드(`...`)는 그대로 두고 바깥쪽만 처리
+        parts = re.split(r"(`[^`]*`)", line)
+        for i, part in enumerate(parts):
+            if part.startswith("`"):
+                continue
+            parts[i] = re.sub(r"<(?!https?://)([^<>\s][^<>]*)>",
+                              r"&lt;\1&gt;", part)
+        out.append("".join(parts))
+    return "\n".join(out)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("zip_path")
@@ -161,7 +192,8 @@ def main():
             title = md_path.stem
 
         lines = strip_notion_props(lines)
-        body = shift_headings("\n".join(lines)).strip()
+        body = shift_headings("\n".join(lines))
+        body = escape_angles(body).strip()
 
         slug = args.slug or re.sub(r"[^a-z0-9]+", "-",
                                    md_path.stem.lower()).strip("-") or "post"

@@ -20,6 +20,10 @@ layout: default
     {% if page.summary %}<p class="post-summary">{{ page.summary }}</p>{% endif %}
     <div class="post-meta">
       <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y년 %-m월 %-d일" }}</time>
+      {% if site.goatcounter %}
+      <span class="dot" aria-hidden="true">·</span>
+      <span class="views">조회 <span id="post-views">–</span></span>
+      {% endif %}
       {% if page.categories.size > 0 %}
       <span class="dot" aria-hidden="true">·</span>
       <a class="crumb" href="{{ '/blog/' | relative_url }}#{{ page.categories | join: '/' | uri_escape }}">
@@ -91,6 +95,19 @@ layout: default
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
   })();
+
+  {% if site.goatcounter %}
+  // 이 글의 조회수 (GoatCounter 공개 카운터). 로그인 없이 누구나 집계됩니다.
+  (function () {
+    var el = document.getElementById('post-views');
+    if (!el) return;
+    // /counter/ 뒤에 페이지 경로를 그대로 붙인다 (경로가 / 로 시작하므로 // 가 됨)
+    fetch('https://{{ site.goatcounter }}.goatcounter.com/counter/' + location.pathname + '.json')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d) el.textContent = d.count_unique || d.count || '0'; })
+      .catch(function () { /* 실패하면 – 그대로 둔다 */ });
+  })();
+  {% endif %}
 
   // 목차 생성 + 현재 위치 표시
   (function () {
