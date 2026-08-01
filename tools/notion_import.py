@@ -108,6 +108,23 @@ def strip_notion_props(lines):
     return out
 
 
+def top_heading_level(text):
+    """본문에서 가장 높은(숫자가 작은) 제목 단계. 코드블록 안은 세지 않는다."""
+    top, in_fence = None, False
+    for line in text.split("\n"):
+        if re.match(r"^\s*```", line):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        m = re.match(r"^(#{1,6})\s+\S", line)
+        if m:
+            lv = len(m.group(1))
+            if top is None or lv < top:
+                top = lv
+    return top
+
+
 def shift_headings(text):
     """모든 제목을 한 단계 내린다 (# → ##). 코드블록 안은 건드리지 않는다."""
     result, in_fence = [], False
@@ -192,7 +209,16 @@ def main():
             title = md_path.stem
 
         lines = strip_notion_props(lines)
-        body = shift_headings("\n".join(lines))
+        body = "\n".join(lines)
+
+        # Notion 페이지에 따라 최상위 제목이 # 일 때도, ## 일 때도 있다.
+        # 목차는 h2/h3 만 읽으므로 최상위가 h2 가 되도록 맞춘다.
+        # (이미 ## 부터 시작하는 글을 또 내리면 목차가 반쯤 비어 보인다.)
+        top = top_heading_level(body)
+        shifted = top == 1
+        if shifted:
+            body = shift_headings(body)
+
         body = escape_angles(body).strip()
 
         slug = args.slug or re.sub(r"[^a-z0-9]+", "-",
@@ -252,6 +278,8 @@ def main():
         print(f"제목    : {title}")
         print(f"카테고리: {cats_yaml}")
         print(f"이미지  : {len(moved)}장 → assets/img/{slug}/")
+        print(f"제목단계: 최상위가 h{top} 이라 " +
+              ("한 단계 내렸습니다" if shifted else "그대로 뒀습니다"))
         if missing:
             print(f"⚠ 경로를 못 찾은 이미지 {len(missing)}개: {missing}")
         if not args.summary:
