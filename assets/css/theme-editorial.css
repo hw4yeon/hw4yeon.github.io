@@ -1066,16 +1066,25 @@ a.tag:hover { border-color: var(--accent); color: var(--accent); }
    ══════════════════════════════════════════════════ */
 .post-toc { margin: 0 0 32px; }
 
+/* 넓은 화면에서는 버튼이지만 그냥 라벨처럼 보인다 (접는 건 좁은 화면 전용) */
 .toc-label {
+  display: block;
+  width: 100%;
   margin: 0 0 12px;
-  padding-bottom: 10px;
+  padding: 0 0 10px;
+  border: 0;
   border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: left;
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--fg-3);
+  cursor: default;
 }
+.toc-count,
+.toc-caret { display: none; }
 
 .toc-list { list-style: none; margin: 0; padding: 0; }
 .toc-list li { margin: 0; }
@@ -1128,14 +1137,68 @@ a.tag:hover { border-color: var(--accent); color: var(--accent); }
 .code-shell[data-lang]:hover::before { opacity: 0; }
 .code-shell[data-lang] pre { padding-top: 30px; }
 
+/* ── 좁은 화면: 목차는 제목 아래 접히는 카드 ─────────────── */
 @media (max-width: 860px) {
   .wrap:has(.post-toc) { display: block; }
-  .wrap:has(.post-toc) > .post-toc {
+  .h-anchor { display: none; }
+
+  .post-toc {
     position: static;
     padding-top: 0;
-    margin-bottom: 28px;
+    margin: 22px 0 30px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
   }
-  .h-anchor { display: none; }
+
+  .toc-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    padding: 13px 15px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    transition: color .18s var(--ease), border-color .25s var(--ease);
+  }
+  .toc-label:hover { color: var(--fg-2); }
+  .post-toc.is-open .toc-label {
+    color: var(--fg-2);
+    border-bottom-color: var(--line);
+  }
+
+  .toc-label-text { flex: 1; }
+
+  .toc-count {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--fg-3);
+    opacity: .7;
+  }
+
+  .toc-caret {
+    display: block;
+    width: 12px;
+    height: 12px;
+    flex: none;
+    transition: transform .28s var(--ease);
+  }
+  .post-toc.is-open .toc-caret { transform: rotate(180deg); }
+
+  /* 접힘 → 펼침. 항목이 많은 글은 목차 안에서만 스크롤되게 높이를 제한한다 */
+  .toc-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s var(--ease);
+  }
+  .post-toc.is-open .toc-list {
+    max-height: 52vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px 15px 12px;
+  }
+  .toc-list a { padding-top: 8px; padding-bottom: 8px; }
 }
 
 /* ── 3단 카테고리 (Study > Wargame > Dreamhack) ──── */

@@ -23,7 +23,7 @@ STEP 1~2를 거쳐 FLAG 페이지에 도달하면 플래그가 출력됩니다.
 - 데이터를 URL에 포함하여 서버에 전달하는 방식
 - 예를 들어 사용자가 검색창에 apple을 검색했다고 가정했을 때, 브라우저 주소창은 다음과 같이 변함
 
-```c
+```plaintext
 https://example.com/search?query=apple
 ```
 
@@ -37,7 +37,7 @@ https://example.com/search?query=apple
 
 GET 방식에서 URL 뒤에 붙는 데이터
 
-```c
+```plaintext
 /search?query=apple&page=1
 ```
 
@@ -55,7 +55,7 @@ GET 방식에서 URL 뒤에 붙는 데이터
 - 로그인 요청을 보낸다고 가정했을 때, ID: test / PW: 1234 라는 데이터를 입력함
 - 하지만 GET 방식과 달리 주소창에는 비밀번호가 보이지 않음
 
-```c
+```plaintext
 https://example.com/login
 ```
 
@@ -75,7 +75,7 @@ VM 접속을 하면 아래 화면이 보임
 
 제공해준 python 파일을 확인해 보면 아래 코드가 step 1 코드
 
-```c
+```python
 @app.route("/step1", methods=["GET", "POST"])
 def step1():
 
@@ -95,7 +95,7 @@ def step1():
         return render_template("step1.html", text = "Not POST")
 ```
 
-```c
+```python
 if prm1 == "getget" and prm2 == "rerequest":
 ```
 
@@ -103,7 +103,7 @@ if prm1 == "getget" and prm2 == "rerequest":
 
 두 조건을 모두 만족할 경우
 
-```c
+```python
 return redirect(url_for("step2", prev_step_num = step1_num))
 ```
 
@@ -115,7 +115,7 @@ redirect()는 사용자를 다른 페이지로 이동시키는 함수이며, 현
 
 step 2 코드
 
-```c
+```python
 @app.route("/step2", methods=["GET", "POST"])
 def step2():
     if request.method == "GET":
@@ -137,7 +137,7 @@ def step2():
         return render_template("step2.html", text="Not POST")
 ```
 
-```c
+```python
 if request.args.get("prev_step_num"):
 ```
 
@@ -145,7 +145,7 @@ if request.args.get("prev_step_num"):
 
 STEP 1에서 redirect가 발생할 때
 
-```c
+```python
 prev_step_num = step1_num
 ```
 
@@ -153,7 +153,7 @@ prev_step_num = step1_num
 
 STEP 2에서는 해당 값이 서버에 step1_num 값과 동일한지 검사
 
-```c
+```python
 step2_num = int.from_bytes(os.urandom(16), sys.byteorder)
 ```
 
@@ -167,6 +167,6 @@ STEP 3
 
 값을 입력하면 FLAG 값이 나옴
 
-```c
+```plaintext
 DH{c46b414ddba26adfa4606c59655bda0a18fbe260606b042b52d865e0160eea0e}
 ```

@@ -6,10 +6,20 @@ layout: default
 {%- comment -%}
   목차. 본문의 h2/h3 를 읽어 JS 가 채웁니다.
   제목이 하나도 없는 글이면 이 요소 자체를 제거해서 2단 레이아웃이 풀립니다.
+
+  넓은 화면에서는 왼쪽 사이드바에 펼쳐진 채로 붙어 있고,
+  좁은 화면에서는 JS 가 제목 아래로 옮겨 접힌 버튼 형태로 보여줍니다.
 {%- endcomment -%}
 <nav class="post-toc" id="post-toc" aria-label="목차">
-  <p class="toc-label">On this page</p>
-  <ol class="toc-list"></ol>
+  <button class="toc-label" type="button" aria-expanded="true" aria-controls="toc-list">
+    <span class="toc-label-text">On this page</span>
+    <span class="toc-count" aria-hidden="true"></span>
+    <svg class="toc-caret" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+      <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <ol class="toc-list" id="toc-list"></ol>
 </nav>
 
 <article class="post">
@@ -144,6 +154,74 @@ layout: default
     };
     mark();
     window.addEventListener('scroll', mark, { passive: true });
+
+    // ── 좁은 화면: 목차를 제목 아래로 옮기고 접어둔다 ──────────
+    // 넓은 화면에서는 목차가 .wrap 의 왼쪽 칸(사이드바)이라 제목보다
+    // 앞에 와야 하지만, 1단으로 접히는 좁은 화면에서는 그 순서 때문에
+    // 제목이 목차 한 판(글에 따라 화면 한두 개 분량) 아래로 밀려난다.
+    var btn    = toc.querySelector('.toc-label');
+    var count  = toc.querySelector('.toc-count');
+    var home   = toc.nextSibling;                  // 넓은 화면에서의 제자리
+    var parent = toc.parentNode;
+    var head   = document.querySelector('.post-head');
+    var narrow = window.matchMedia('(max-width: 860px)');
+
+    if (count) count.textContent = links.length;
+
+    var open = function (yes) {
+      toc.classList.toggle('is-open', yes);
+      if (btn) btn.setAttribute('aria-expanded', yes ? 'true' : 'false');
+
+      // 목차가 길어 안에서 스크롤될 때, 펼치면 지금 읽는 항목이 보이게.
+      // 펼침 전환이 끝나야 목차의 실제 높이를 알 수 있다.
+      if (!yes) return;
+      setTimeout(function () {
+        var here = list.querySelector('a.is-here');
+        if (!here || list.scrollHeight <= list.clientHeight) return;
+        var offset = here.getBoundingClientRect().top
+                   - list.getBoundingClientRect().top
+                   + list.scrollTop;
+        list.scrollTop = Math.max(0, offset - list.clientHeight / 2);
+      }, 320);
+    };
+
+    var place = function () {
+      if (narrow.matches) {
+        // 제목 · 요약 · 날짜 바로 다음
+        if (head && toc.previousElementSibling !== head) head.after(toc);
+        open(false);
+      } else {
+        if (toc.parentNode !== parent) parent.insertBefore(toc, home);
+        open(true);
+      }
+    };
+    place();
+    narrow.addEventListener('change', place);
+
+    if (btn) {
+      btn.addEventListener('click', function () {
+        if (!narrow.matches) return;            // 넓은 화면에선 그냥 제목 역할
+        open(!toc.classList.contains('is-open'));
+      });
+    }
+
+    // 항목을 고르면 접어서 본문이 바로 보이게.
+    // 목차가 접히면 그 아래가 통째로 위로 올라오므로, 접히는 도중에
+    // 이동하면 목표보다 한참 아래에 도착한다. 접힘이 끝난 뒤 옮긴다.
+    list.addEventListener('click', function (e) {
+      var a = e.target.closest('a');
+      if (!a || !narrow.matches) return;
+
+      var target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+      if (!target) return;
+
+      e.preventDefault();
+      open(false);
+      setTimeout(function () {
+        target.scrollIntoView();               // 제목의 scroll-margin-top 존중
+        history.replaceState(null, '', a.hash);
+      }, 320);                                  // .toc-list 접힘 전환(.3s) 직후
+    });
   })();
 
   // 제목마다 앵커 링크 (해당 섹션 주소를 바로 복사할 수 있게)
